@@ -1,0 +1,107 @@
+		// Fetch Data into RecyclerView
+
+		//.1 Create Adapter Class 
+
+
+public class Adapter extends RecyclerView.Adapter<Adapter.MyviewHolder>
+{
+
+  Context context;
+    ArrayList<ModelclassResponse>list;
+
+    public Adapter(Context context, ArrayList<ModelclassResponse> list) {
+        this.context = context;
+        this.list = list;
+    }
+
+    public Adapter(FetchDataActivity fetchDataActivity, ArrayList<ModelclassResponse> list) {
+    }
+
+    @NonNull
+    @Override
+    public Adapter.MyviewHolder onCreateViewHolder(@NonNull  ViewGroup parent, int viewType) {
+         View v = LayoutInflater.from(context.getContext()).inflate(R.layout.desginerow,parent,false);
+
+        return new MyviewHolder(v);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull  Adapter.MyviewHolder holder, int position) {
+
+        ModelclassResponse modelclassResponse = list.get(position);
+        holder.priceres.setText(modelclassResponse.getPrice());
+        holder.nameres.setText(modelclassResponse.getName());
+        holder.gaurantyres.setText(modelclassResponse.getGauranty());
+        holder.oldres.setText(modelclassResponse.getOld());
+        Glide.with(holder.imageres.getContext()).load(modelclassResponse.key).into(holder.imageres);
+
+    }
+
+    @Override
+    public int getItemCount() {
+        return list.size();
+    }
+
+    public static class MyviewHolder extends RecyclerView.ViewHolder {
+
+        ImageView imageres;
+        TextView nameres,priceres,gaurantyres,oldres;
+
+
+        public MyviewHolder(@NonNull  View itemView) {
+            super(itemView);
+
+            imageres= itemView.findViewById(R.id.imageres);
+            nameres= itemView.findViewById(R.id.nameres);
+            priceres= itemView.findViewById(R.id.priceres);
+            gaurantyres= itemView.findViewById(R.id.gaurantyres);
+            oldres= itemView.findViewById(R.id.oldres);
+        }
+    }
+}
+
+			//MainActivity
+
+
+    RecyclerView recyclerView;
+    ArrayList<ModelclassResponse>list;
+    DatabaseReference databaseReference;
+    Adapter adapter;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_fetch_data);
+
+ recyclerView = findViewById(R.id.recyclerview);
+        databaseReference = FirebaseDatabase.getInstance().getReference("User");
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        list = new ArrayList<>();
+        adapter = new Adapter(this,list);
+        recyclerView.setAdapter(adapter);
+
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull  DataSnapshot snapshot) {
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()){
+
+                    ModelclassResponse model = dataSnapshot.getValue(ModelclassResponse.class);
+                    list.add(model);
+                }
+                adapter.notifyDataSetChanged();
+
+
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull  DatabaseError error) {
+
+            }
+        });
+
+
+    }
+}
+
